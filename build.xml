@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project name="[Portal Install]" basedir="." xmlns:flyway="antlib:org.flywaydb.ant">
+	<property file="build.properties" />
+	<property name="db.url" value="jdbc:mysql://${db.host}:${db.port}/${db.schema}" />
+	
+	<property name="src.sql" value="sqls" />
+	<property name="target.sql" value="target/sqls" />
+
+	<path id="runtime.path">
+		<fileset dir="./libs" includes="*.jar" />
+	</path>
+	
+	<taskdef uri="antlib:org.flywaydb.ant" resource="org/flywaydb/ant/antlib.xml" classpathref="runtime.path" />
+	
+	<target name="db-test">
+		<echo message="Checking database connection at: ${db.host}:${db.port} -> ${db.schema}" />
+		<sql userid="${db.username}" password="${db.password}" url="{db.url}" driver="${db.driver}" classpathref="runtime.path">
+			select 1			
+		</sql>
+	</target>
+	
+	<target name="flyway-info">
+		<echo message="Display Database Migration Information" />
+		<flyway:info url="${db.url}" user="${db.username}" password="${db.password}">
+			<locations>
+				<location path="filesystem:${db.migration.path}" />
+			</locations>
+		</flyway:info>
+	</target>
+		
+	<target name="flyway-clean">
+		<echo message="Clean Database Migration" />
+		<flyway:clean url="${db.url}" user="${db.username}" password="${db.password}">
+			<locations>
+				<location path="filesystem:${db.migration.path}" />
+			</locations>
+		</flyway:clean>
+	</target>
+
+	<target name="flyway-migrate">
+		<echo message="Migrate Database" />
+		<flyway:migrate url="${db.url}" user="${db.username}" password="${db.password}">
+			<locations>
+				<location path="filesystem:${db.migration.path}" />
+			</locations>
+		</flyway:migrate>
+	</target>
+	
+	<target name="generate-sql">
+		<echo message="1. Copy mysql sql files" />
+		<mkdir dir="${target.sql}" />
+		<copy todir="${target.sql}" verbose="false" overwrite="true" encoding="${encoding.sql}">
+	        <fileset dir="${src.sql}" />
+			<filterset>
+				<filter  token="SUPER_USER" value="${db.super.user}" />
+	        	<filter  token="SUPER_USER_ID" value="${db.super.user.id}" />
+			</filterset>
+	    </copy>
+	</target>
+</project>

@@ -1,0 +1,1 @@
+INSERT INTO users(id, username) VALUES (@SUPER_USER_ID@, "@SUPER_USER@");
